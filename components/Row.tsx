@@ -16,7 +16,6 @@ function Row({ title, movies }: Props) {
 
   const handClick = (direction: string) => {
     setIsMoved(true)
-
     if (rowRef.current) {
       const { scrollLeft, clientWidth } = rowRef.current
 
@@ -24,7 +23,6 @@ function Row({ title, movies }: Props) {
         direction === 'left'
           ? scrollLeft - clientWidth
           : scrollLeft + clientWidth
-
       rowRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' })
     }
   }
@@ -41,7 +39,6 @@ function Row({ title, movies }: Props) {
           } `}
           onClick={() => handClick('left')}
         />
-
         <div
           ref={rowRef}
           className="flex items-center space-x-0.5 overflow-x-scroll scrollbar-hide md:space-x-2.5 md:p-2"
