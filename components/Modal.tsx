@@ -52,7 +52,7 @@ function Modal() {
     setShowModal(false)
   }
 
-  console.log(trailer)
+  console.log(Trailer)
 
   return (
     <MuiModal
