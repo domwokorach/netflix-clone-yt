@@ -31,7 +31,7 @@ const Home = ({
   trendingNow,
 }: Props) => {
   const { loading } = useAuth()
-  const { showModal } = useRecoilValue(modalState)
+  const showModal = useRecoilValue(modalState)
 
   if (loading) return null
 

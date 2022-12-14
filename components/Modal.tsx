@@ -9,14 +9,14 @@ import MuiModal from '@mui/material/Modal'
 import { useEffect, useState } from 'react'
 import { FaPlay } from 'react-icons/fa'
 import ReactPlayer from 'react-player/lazy'
-import { useRecoilState, useRecoilValue } from 'recoil'
+import { useRecoilState } from 'recoil'
 import { modalState, movieState } from '../atoms/modalAtom'
 import { Element, Genre } from '../typings'
 
 function Modal() {
   const [showModal, setShowModal] = useRecoilState(modalState)
   const [movie, setMovie] = useRecoilState(movieState)
-  const [Trailer, setTrailer] = useState('')
+  const [trailer, setTrailer] = useState('')
   const [genres, setGenres] = useState<Genre[]>([])
   const [muted, setMuted] = useState(true)
 
@@ -30,10 +30,7 @@ function Modal() {
         }/${movie?.id}?api_key=${
           process.env.NEXT_PUBLIC_API_KEY
         }&language=en-US&append_to_response=videos`
-      )
-        .then((response) => response.json())
-        .catch((err) => console.log(err.message))
-
+      ).then((response) => response.json())
       if (data?.videos) {
         const index = data.videos.results.findIndex(
           (element: Element) => element.type === 'Trailer'
@@ -52,7 +49,7 @@ function Modal() {
     setShowModal(false)
   }
 
-  console.log(Trailer)
+  console.log(trailer)
 
   return (
     <MuiModal
