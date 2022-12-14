@@ -31,7 +31,7 @@ const Home = ({
   trendingNow,
 }: Props) => {
   const { loading } = useAuth()
-  const showModal = useRecoilValue(modalState)
+  const { showModal } = useRecoilValue(modalState)
 
   if (loading) return null
 
@@ -96,7 +96,4 @@ export const getServerSideProps = async () => {
       documentaries: documentaries.results,
     },
   }
-}
-function useRecoilValue() {
-  throw new Error('Function not implemented.')
 }

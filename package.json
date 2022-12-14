@@ -8,8 +8,11 @@
   "dependencies": {
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
+    "@fontsource/roboto": "^4.5.8",
     "@heroicons/react": "^1.0.6",
+    "@mui/icons-material": "^5.11.0",
     "@mui/material": "^5.11.0",
+    "@mui/styled-engine-sc": "^5.11.0",
     "firebase": "^9.14.0",
     "heroicons-react": "^1.4.1",
     "next": "latest",
@@ -19,6 +22,7 @@
     "react-icons": "^4.7.1",
     "react-player": "^2.11.0",
     "recoil": "^0.7.6",
+    "styled-components": "^5.3.6",
     "tailwind-scrollbar-hide": "^1.1.7",
     "web-vitals": "^3.1.0"
   },
