@@ -1,20 +1,19 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/outline'
+import { DocumentData } from 'firebase/firestore'
 import { useRef, useState } from 'react'
 import { Movie } from '../typings'
 import Thumbnail from './Thumbnail'
 
 interface Props {
   title: string
-  // When using firebase
-  // movie: Movie | DocumentData[]
-  movies: Movie[]
+  movies: Movie[] | DocumentData[]
 }
 
 function Row({ title, movies }: Props) {
   const rowRef = useRef<HTMLDivElement>(null)
   const [isMoved, setIsMoved] = useState(false)
 
-  const handClick = (direction: string) => {
+  const handleClick = (direction: string) => {
     setIsMoved(true)
     if (rowRef.current) {
       const { scrollLeft, clientWidth } = rowRef.current
@@ -36,21 +35,20 @@ function Row({ title, movies }: Props) {
         <ChevronLeftIcon
           className={`absolute top-0 bottom-0 left-2 z-40 m-auto h-9 w-9 cursor-pointer opacity-0 transition hover:scale-125 group-hover:opacity-100 ${
             !isMoved && 'hidden'
-          } `}
-          onClick={() => handClick('left')}
+          }`}
+          onClick={() => handleClick('left')}
         />
         <div
-          ref={rowRef}
           className="flex items-center space-x-0.5 overflow-x-scroll scrollbar-hide md:space-x-2.5 md:p-2"
+          ref={rowRef}
         >
           {movies.map((movie) => (
             <Thumbnail key={movie.id} movie={movie} />
           ))}
         </div>
-
         <ChevronRightIcon
-          className={`absolute top-0 bottom-0 right-2 z-40 m-auto h-9 w-9 cursor-pointer opacity-0 transition hover:scale-125 group-hover:opacity-100`}
-          onClick={() => handClick('right')}
+          className="absolute top-0 bottom-0 right-2 z-40 m-auto h-9 w-9 cursor-pointer opacity-0 transition hover:scale-125 group-hover:opacity-100"
+          onClick={() => handleClick('right')}
         />
       </div>
     </div>

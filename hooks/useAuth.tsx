@@ -33,13 +33,12 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [loading, setLoading] = useState(false)
+  const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState(null)
   const [initialLoading, setInitialLoading] = useState(true)
-  const router = useRouter()
+  const [loading, setLoading] = useState(false)
 
-  // Persisting the user
   useEffect(
     () =>
       onAuthStateChanged(auth, (user) => {
@@ -74,7 +73,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signIn = async (email: string, password: string) => {
     setLoading(true)
-
     await signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         setUser(userCredential.user)
@@ -97,15 +95,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }
 
   const memoedValue = useMemo(
-    () => ({
-      user,
-      signUp,
-      signIn,
-      loading,
-      logout,
-      error,
-    }),
-    [user, loading]
+    () => ({ user, signUp, signIn, error, loading, logout }),
+    [user, loading, error]
   )
 
   return (
@@ -115,6 +106,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   )
 }
 
+// Let's only export the `useAuth` hook instead of the context.
+// We only want to use the hook directly and never the context comopnent.
 export default function useAuth() {
   return useContext(AuthContext)
 }

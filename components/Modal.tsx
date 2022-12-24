@@ -1,24 +1,49 @@
+import { useEffect, useState } from 'react'
+import { useRecoilState } from 'recoil'
+import { modalState, movieState } from '../atoms/modalAtom'
+import ReactPlayer from 'react-player/lazy'
+import { FaPlay } from 'react-icons/fa'
 import {
+  CheckIcon,
   PlusIcon,
   ThumbUpIcon,
   VolumeOffIcon,
+  VolumeUpIcon,
   XIcon,
 } from '@heroicons/react/outline'
-import { VolumeUpIcon } from '@heroicons/react/solid'
+import { Element, Genre, Movie } from '../typings'
 import MuiModal from '@mui/material/Modal'
-import { useEffect, useState } from 'react'
-import { FaPlay } from 'react-icons/fa'
-import ReactPlayer from 'react-player/lazy'
-import { useRecoilState } from 'recoil'
-import { modalState, movieState } from '../atoms/modalAtom'
-import { Element, Genre } from '../typings'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  DocumentData,
+  onSnapshot,
+  setDoc,
+} from 'firebase/firestore'
+import { db } from '../firebase'
+import useAuth from '../hooks/useAuth'
+import toast, { Toaster } from 'react-hot-toast'
 
 function Modal() {
-  const [showModal, setShowModal] = useRecoilState(modalState)
   const [movie, setMovie] = useRecoilState(movieState)
   const [trailer, setTrailer] = useState('')
-  const [genres, setGenres] = useState<Genre[]>([])
+  const [showModal, setShowModal] = useRecoilState(modalState)
   const [muted, setMuted] = useState(true)
+  const [genres, setGenres] = useState<Genre[]>([])
+  const [addedToList, setAddedToList] = useState(false)
+  const { user } = useAuth()
+  const [movies, setMovies] = useState<DocumentData[] | Movie[]>([])
+
+  const toastStyle = {
+    background: 'white',
+    color: 'black',
+    fontWeight: 'bold',
+    fontSize: '16px',
+    padding: '15px',
+    borderRadius: '9999px',
+    maxWidth: '1000px',
+  }
 
   useEffect(() => {
     if (!movie) return
@@ -47,25 +72,78 @@ function Modal() {
 
   const handleClose = () => {
     setShowModal(false)
+    setMovie(null)
+    toast.dismiss()
   }
 
-  console.log(trailer)
+  // Find all the movies in the user's list
+  useEffect(() => {
+    if (user) {
+      return onSnapshot(
+        collection(db, 'customers', user.uid, 'myList'),
+        (snapshot) => setMovies(snapshot.docs)
+      )
+    }
+  }, [db, movie?.id])
+
+  // Check if the movie is already in the user's list
+  useEffect(
+    () =>
+      setAddedToList(
+        movies.findIndex((result) => result.data().id === movie?.id) !== -1
+      ),
+    [movies]
+  )
+
+  const handleList = async () => {
+    if (addedToList) {
+      await deleteDoc(
+        doc(db, 'customers', user!.uid, 'myList', movie?.id.toString()!)
+      )
+
+      toast(
+        `${movie?.title || movie?.original_name} has been removed from My List`,
+        {
+          duration: 8000,
+          style: toastStyle,
+        }
+      )
+    } else {
+      await setDoc(
+        doc(db, 'customers', user!.uid, 'myList', movie?.id.toString()!),
+        {
+          ...movie,
+        }
+      )
+
+      toast(
+        `${movie?.title || movie?.original_name} has been added to My List.`,
+        {
+          duration: 8000,
+          style: toastStyle,
+        }
+      )
+    }
+  }
+
+  console.log(addedToList)
 
   return (
     <MuiModal
       open={showModal}
       onClose={handleClose}
-      className="fixex !top-7 left-0 right-0 z-50 mx-auto w-full mx-w-5xl overflow-hidden overflow-y-scroll rounded-md scrollbar-hide"
+      className="fixed !top-7 left-0 right-0 z-50 mx-auto w-full max-w-5xl overflow-hidden overflow-y-scroll rounded-md scrollbar-hide"
     >
       <>
+        <Toaster position="bottom-center" />
         <button
-          onClick={handleClose}
           className="modalButton absolute right-5 top-5 !z-40 h-9 w-9 border-none bg-[#181818] hover:bg-[#181818]"
+          onClick={handleClose}
         >
           <XIcon className="h-6 w-6" />
         </button>
 
-        <div className="relative pt[56.25%]">
+        <div className="relative pt-[56.25%]">
           <ReactPlayer
             url={`https://www.youtube.com/watch?v=${trailer}`}
             width="100%"
@@ -77,16 +155,18 @@ function Modal() {
           <div className="absolute bottom-10 flex w-full items-center justify-between px-10">
             <div className="flex space-x-2">
               <button className="flex items-center gap-x-2 rounded bg-white px-8 text-xl font-bold text-black transition hover:bg-[#e6e6e6]">
-                <FaPlay className="h-7 w-7 text-black " />
+                <FaPlay className="h-7 w-7 text-black" />
                 Play
               </button>
-
-              <button className="modalButton">
-                <PlusIcon className="h-7 w-7" />
+              <button className="modalButton" onClick={handleList}>
+                {addedToList ? (
+                  <CheckIcon className="h-7 w-7" />
+                ) : (
+                  <PlusIcon className="h-7 w-7" />
+                )}
               </button>
-
               <button className="modalButton">
-                <ThumbUpIcon className="h-7 w-7" />
+                <ThumbUpIcon className="h-6 w-6" />
               </button>
             </div>
             <button className="modalButton" onClick={() => setMuted(!muted)}>
@@ -98,7 +178,6 @@ function Modal() {
             </button>
           </div>
         </div>
-
         <div className="flex space-x-16 rounded-b-md bg-[#181818] px-10 py-8">
           <div className="space-y-6 text-lg">
             <div className="flex items-center space-x-2 text-sm">
@@ -112,22 +191,21 @@ function Modal() {
                 HD
               </div>
             </div>
-
             <div className="flex flex-col gap-x-10 gap-y-4 font-light md:flex-row">
               <p className="w-5/6">{movie?.overview}</p>
               <div className="flex flex-col space-y-3 text-sm">
                 <div>
-                  <span className="text-[gray]">Genres: </span>
+                  <span className="text-[gray]">Genres:</span>{' '}
                   {genres.map((genre) => genre.name).join(', ')}
                 </div>
 
                 <div>
-                  <span className="text-[gray]">Original language: </span>
+                  <span className="text-[gray]">Original language:</span>{' '}
                   {movie?.original_language}
                 </div>
 
                 <div>
-                  <span className="text-[gray]">Total votes: </span>
+                  <span className="text-[gray]">Total votes:</span>{' '}
                   {movie?.vote_count}
                 </div>
               </div>
